@@ -1,0 +1,226 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "gpuType": "T4",
+      "mount_file_id": "1MNSqq5fDLsvVNhVT5sAl7BsWVdPTEot5",
+      "authorship_tag": "ABX9TyMRiYpOgHt+rxiViz9pN4I5",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    },
+    "accelerator": "GPU"
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/suvendusamanta-github/CNN-NEURAL_NETWORK/blob/main/CNN-maindaset\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import tensorflow as tf\n",
+        "from tensorflow.keras import layers, models\n",
+        "import matplotlib.pyplot as plt\n",
+        "import numpy as np\n",
+        "from google.colab import drive\n",
+        "import os\n"
+      ],
+      "metadata": {
+        "id": "Ng3rAhiZ8ugy"
+      },
+      "execution_count": 10,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "dataset_path = '/content/drive/MyDrive/IMG_CLASSES'\n",
+        "IMG_SIZE = 64\n",
+        "BATCH_SIZE = 64"
+      ],
+      "metadata": {
+        "id": "e7ah8k7V8w0q"
+      },
+      "execution_count": 11,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from tensorflow.keras.preprocessing.image import ImageDataGenerator\n",
+        "\n",
+        "datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)\n",
+        "\n",
+        "train_gen = datagen.flow_from_directory(\n",
+        "    dataset_path,\n",
+        "    target_size=(IMG_SIZE, IMG_SIZE),\n",
+        "    batch_size=64,\n",
+        "    class_mode='sparse',\n",
+        "    subset='training'\n",
+        ")\n",
+        "\n",
+        "val_gen = datagen.flow_from_directory(\n",
+        "    dataset_path,\n",
+        "    target_size=(IMG_SIZE, IMG_SIZE),\n",
+        "    batch_size=64,\n",
+        "    class_mode='sparse',\n",
+        "    subset='validation'\n",
+        ")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "SUBrg1niAGPJ",
+        "outputId": "66f9ce80-22ff-465f-acc6-964aebcbeb80"
+      },
+      "execution_count": 12,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Found 21760 images belonging to 10 classes.\n",
+            "Found 5433 images belonging to 10 classes.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from tensorflow.keras.models import Sequential\n",
+        "from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout\n",
+        "\n",
+        "model = Sequential([\n",
+        "    Conv2D(32, (3, 3), activation='relu', input_shape=(64, 64, 3)),\n",
+        "    MaxPooling2D(pool_size=(2, 2)),\n",
+        "    Conv2D(64, (3, 3), activation='relu'),\n",
+        "    MaxPooling2D(pool_size=(2, 2)),\n",
+        "    Conv2D(128, (3, 3), activation='relu'),\n",
+        "    MaxPooling2D(pool_size=(2, 2)),\n",
+        "    Flatten(),\n",
+        "    Dense(512, activation='relu'),\n",
+        "    Dropout(0.5),\n",
+        "    Dense(1, activation='sigmoid')  # For binary classification, use sigmoid\n",
+        "])"
+      ],
+      "metadata": {
+        "id": "ZmeG5QWJB4oZ"
+      },
+      "execution_count": 18,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.compile(optimizer='adam',\n",
+        "              loss='sparse_categorical_crossentropy',\n",
+        "              metrics=['accuracy'])\n"
+      ],
+      "metadata": {
+        "id": "EbYDesutCNg5"
+      },
+      "execution_count": 19,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.summary()\n",
+        ""
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "0Om2lUVzCvea",
+        "outputId": "226422f8-e0b7-4554-8a61-6b5303f48e90"
+      },
+      "execution_count": 20,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Model: \"sequential_2\"\n",
+            "_________________________________________________________________\n",
+            " Layer (type)                Output Shape              Param #   \n",
+            "=================================================================\n",
+            " conv2d_6 (Conv2D)           (None, 62, 62, 32)        896       \n",
+            "                                                                 \n",
+            " max_pooling2d_6 (MaxPoolin  (None, 31, 31, 32)        0         \n",
+            " g2D)                                                            \n",
+            "                                                                 \n",
+            " conv2d_7 (Conv2D)           (None, 29, 29, 64)        18496     \n",
+            "                                                                 \n",
+            " max_pooling2d_7 (MaxPoolin  (None, 14, 14, 64)        0         \n",
+            " g2D)                                                            \n",
+            "                                                                 \n",
+            " conv2d_8 (Conv2D)           (None, 12, 12, 128)       73856     \n",
+            "                                                                 \n",
+            " max_pooling2d_8 (MaxPoolin  (None, 6, 6, 128)         0         \n",
+            " g2D)                                                            \n",
+            "                                                                 \n",
+            " flatten_2 (Flatten)         (None, 4608)              0         \n",
+            "                                                                 \n",
+            " dense_4 (Dense)             (None, 512)               2359808   \n",
+            "                                                                 \n",
+            " dropout_2 (Dropout)         (None, 512)               0         \n",
+            "                                                                 \n",
+            " dense_5 (Dense)             (None, 1)                 513       \n",
+            "                                                                 \n",
+            "=================================================================\n",
+            "Total params: 2453569 (9.36 MB)\n",
+            "Trainable params: 2453569 (9.36 MB)\n",
+            "Non-trainable params: 0 (0.00 Byte)\n",
+            "_________________________________________________________________\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "history = model.fit(\n",
+        "    train_gen,\n",
+        "    epochs=5,\n",
+        "    validation_data=val_gen\n",
+        ")\n",
+        ""
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Vukoki3wGm-q",
+        "outputId": "20f85325-1bb3-4c47-b4ae-eb9c62fcdc90"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Epoch 1/5\n",
+            "  4/340 [..............................] - ETA: 3:52:42 - loss: nan - accuracy: 0.0781"
+          ]
+        }
+      ]
+    }
+  ]
+}
